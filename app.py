@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import joblib
@@ -8,7 +7,7 @@ import joblib
 # ============================================================
 
 st.set_page_config(
-    page_title="NutriCare | Diet Recommendation",
+    page_title="NutriCare Pro | Advanced Diet Recommendation",
     page_icon="🥗",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -20,147 +19,365 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-/* Main background */
-.stApp {
-    background: #f7faf8;
+/* Main background & base styling */
+html, body, [data-testid="stAppViewContainer"] {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    background-color: #f4f7f5 !important;
+    color: #1f2937 !important;
+}
+
+/* Header style override */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    color: #064e3b !important;
+    font-weight: 700 !important;
 }
 
 /* Remove default top padding */
 .block-container {
-    padding-top: 2rem;
-    padding-bottom: 3rem;
+    padding-top: 2rem !important;
+    padding-bottom: 3rem !important;
+    max-width: 1200px !important;
 }
 
-/* Hero */
-.hero {
-    background: linear-gradient(135deg, #0f5132 0%, #198754 55%, #43aa73 100%);
-    padding: 42px 45px;
-    border-radius: 24px;
+/* Hero Section */
+.hero-card {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 40%, #0f766e 100%);
+    padding: 3.5rem 2.5rem;
+    border-radius: 20px;
     color: white;
-    margin-bottom: 30px;
-    box-shadow: 0 8px 25px rgba(25, 135, 84, 0.18);
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(6, 78, 59, 0.15);
+    position: relative;
+    overflow: hidden;
 }
 
-.hero h1 {
-    font-size: 42px;
+.hero-card::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(209,250,229,0.1) 0%, rgba(209,250,229,0) 70%);
+    border-radius: 50%;
+}
+
+.hero-title {
+    font-size: 2.8rem;
     font-weight: 800;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.hero p {
-    font-size: 18px;
-    margin-bottom: 0;
-    opacity: 0.92;
+.hero-subtitle {
+    font-size: 1.25rem;
+    opacity: 0.9;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: #d1fae5;
 }
 
-/* Section title */
-.section-title {
-    font-size: 25px;
-    font-weight: 750;
-    color: #164b35;
-    margin-top: 28px;
-    margin-bottom: 15px;
+.hero-tagline {
+    font-size: 1rem;
+    opacity: 0.8;
+    font-weight: 400;
+    max-width: 700px;
 }
 
-/* Info cards */
-.info-card {
-    background: white;
-    padding: 20px;
-    border-radius: 18px;
-    border: 1px solid #e2ebe5;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-    margin-bottom: 15px;
-}
-
-/* Recommendation card */
-.recommendation {
-    background: linear-gradient(135deg, #e8f7ee, #f6fff9);
-    border: 1px solid #b9dfc8;
-    border-radius: 24px;
-    padding: 30px;
-    text-align: center;
-    margin-top: 25px;
-    margin-bottom: 25px;
-}
-
-.recommendation-label {
-    color: #4d6b5b;
-    font-size: 15px;
+.badge-pill-header {
+    background: rgba(209, 250, 229, 0.2);
+    border: 1px solid rgba(209, 250, 229, 0.3);
+    color: #d1fae5;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.85rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 1.5rem;
 }
 
-.recommendation-title {
-    color: #0f5132;
-    font-size: 36px;
-    font-weight: 850;
-    margin-top: 8px;
+/* Form Container Styling */
+.form-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
 }
 
-/* Food cards */
+/* Tab styling overrides */
+button[data-baseweb="tab"] {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #4b5563 !important;
+    padding: 12px 20px !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+button[aria-selected="true"] {
+    color: #065f46 !important;
+    border-bottom-color: #059669 !important;
+}
+
+/* Section Subheaders */
+.section-header {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #064e3b;
+    border-left: 5px solid #10b981;
+    padding-left: 12px;
+    margin-bottom: 1.2rem;
+    margin-top: 1rem;
+}
+
+/* Custom styled Alert/Info box for Bangladeshi and Halal default notice */
+.highlight-box {
+    background-color: #ecfdf5;
+    border: 1px dashed #34d399;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+/* Food Card styling */
 .food-card {
     background: white;
-    border: 1px solid #e2ebe5;
-    border-radius: 18px;
-    padding: 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-}
-
-.food-name {
-    color: #164b35;
-    font-size: 19px;
-    font-weight: 750;
-}
-
-.badge {
-    display: inline-block;
-    padding: 5px 10px;
-    margin-right: 5px;
-    margin-top: 8px;
-    border-radius: 20px;
-    background: #eaf7ef;
-    color: #176b43;
-    font-size: 12px;
-    font-weight: 650;
-}
-
-/* Footer */
-.footer {
-    text-align: center;
-    color: #718078;
-    font-size: 13px;
-    padding-top: 25px;
-}
-
-/* Button */
-.stButton > button {
-    width: 100%;
-    height: 52px;
-    border-radius: 14px;
-    font-size: 17px;
-    font-weight: 750;
-}
-
-/* Metrics */
-[data-testid="stMetric"] {
-    background: white;
-    padding: 18px;
+    border: 1px solid #e5e7eb;
     border-radius: 16px;
-    border: 1px solid #e2ebe5;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
 }
 
-/* Inputs */
-div[data-baseweb="input"] > div,
-div[data-baseweb="select"] > div {
+.food-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(6, 78, 59, 0.08);
+    border-color: #34d399;
+}
+
+.food-title {
+    font-size: 1.25rem;
+    font-weight: 750;
+    color: #064e3b;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    min-height: 2.8rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.food-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.food-badge {
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-cuisine {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.badge-category {
+    background-color: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #e9d5ff;
+}
+
+.badge-halal {
+    background-color: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-haram {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* Nutrition Fact Grid */
+.nutrition-fact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+    background-color: #f9fafb;
+    padding: 10px;
     border-radius: 10px;
+    border: 1px solid #f3f4f6;
 }
 
-/* Divider */
-hr {
-    border-color: #dce8e0;
+.nutrition-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4px;
+}
+
+.nutrition-label {
+    font-size: 0.7rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.nutrition-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Beautiful results card */
+.diet-result-card {
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+    border: 2px solid #34d399;
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px rgba(52, 211, 153, 0.1);
+}
+
+.diet-result-sub {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #047857;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.5rem;
+}
+
+.diet-result-main {
+    font-size: 2.5rem;
+    font-weight: 850;
+    color: #064e3b;
+    margin-bottom: 1rem;
+}
+
+.diet-result-desc {
+    font-size: 1.1rem;
+    color: #374151;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Confidence Meters */
+.confidence-meter-container {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.confidence-bar-bg {
+    background-color: #e5e7eb;
+    border-radius: 100px;
+    height: 8px;
+    width: 100%;
+    margin-top: 6px;
+}
+
+.confidence-bar-fill {
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 100px;
+    height: 8px;
+}
+
+/* Footer Section */
+.footer-container {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background-color: #0f172a;
+    color: #94a3b8;
+    border-radius: 20px;
+    margin-top: 3rem;
+}
+
+.footer-logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Big custom action button styling */
+.stButton > button {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 14px 28px !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3) !important;
+    transition: all 0.2s ease !important;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4) !important;
+    color: white !important;
+}
+
+.stButton > button:active {
+    transform: translateY(0px) !important;
+}
+
+/* Form input elements stylings */
+div[data-testid="stMetricValue"] {
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+    color: #064e3b !important;
+}
+
+div[data-testid="stMetricLabel"] {
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: #4b5563 !important;
+}
+
+/* Custom styled containers */
+.stTabs {
+    background-color: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
 }
 
 </style>
@@ -341,489 +558,420 @@ def recommend_foods(
 
 
 # ============================================================
-# HERO
+# HERO HEADER SECTION
 # ============================================================
 
 st.markdown("""
-<div class="hero">
-
-<h1>🥗 NutriCare</h1>
-
-<p>
-Personalized Diet Recommendation System
-</p>
-
-<p>
-Smart nutrition recommendations based on your
-health profile, lifestyle and food preferences.
-</p>
-
+<div class="hero-card">
+    <div class="badge-pill-header">
+        <span>🛡️</span> Academic Research Validation Project
+    </div>
+    <div class="hero-title">🥗 NutriCare Pro</div>
+    <div class="hero-subtitle">Advanced Clinical Diet & Nutrition Recommendation System</div>
+    <div class="hero-tagline">
+        Get tailored, data-driven food and dietary plans based on your unique clinical profile, biometric readings, and preferred cuisine. Utilizing custom Machine Learning classifications with enhanced localized food profile validation.
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
 
 # ============================================================
-# PERSONAL INFORMATION
+# USER INPUT FORM (SECTIONED VIA TABS)
 # ============================================================
 
-st.markdown(
-    '<div class="section-title">👤 Personal Information</div>',
-    unsafe_allow_html=True
-)
+tab1, tab2, tab3 = st.tabs([
+    "👤 Personal Profile",
+    "🏥 Health & Clinical Profile",
+    "🍽️ Food Preferences & Lifestyle"
+])
 
-col1, col2, col3 = st.columns(3)
+# -----------------------------
+# TAB 1: PERSONAL BIOMETRICS
+# -----------------------------
+with tab1:
+    st.markdown('<div class="section-header">👤 Personal Profile Details</div>', unsafe_allow_html=True)
+    st.markdown('<p style="color: #6b7280; margin-top: -10px; margin-bottom: 20px;">Provide basic biometrics and demographic values to calibrate recommendation constraints.</p>', unsafe_allow_html=True)
 
-with col1:
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        age = st.number_input(
+            "Age (Years)",
+            18,
+            100,
+            25
+        )
+        weight = st.number_input(
+            "Weight (kg)",
+            30.0,
+            200.0,
+            65.0
+        )
 
-    age = st.number_input(
-        "Age",
-        18,
-        100,
-        25
-    )
+    with col2:
+        gender = st.selectbox(
+            "Gender",
+            ["Male", "Female"]
+        )
+        height = st.number_input(
+            "Height (cm)",
+            100.0,
+            220.0,
+            165.0
+        )
 
-with col2:
+    with col3:
+        activity = st.selectbox(
+            "Physical Activity Level",
+            [
+                "Sedentary",
+                "Moderate",
+                "Active"
+            ]
+        )
+        bmi = st.number_input(
+            "BMI (Body Mass Index)",
+            10.0,
+            60.0,
+            24.0
+        )
 
-    gender = st.selectbox(
-        "Gender",
-        ["Male", "Female"]
-    )
+# -----------------------------
+# TAB 2: HEALTH & CLINICAL PROFILE
+# -----------------------------
+with tab2:
+    st.markdown('<div class="section-header">🏥 Clinical & Health Profile</div>', unsafe_allow_html=True)
+    st.markdown('<p style="color: #6b7280; margin-top: -10px; margin-bottom: 20px;">Enter chronic medical conditions and quantitative diagnostic test results.</p>', unsafe_allow_html=True)
 
-with col3:
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        disease = st.selectbox(
+            "Disease Type",
+            [
+                "Diabetes",
+                "Hypertension",
+                "Obesity",
+                "None"
+            ]
+        )
+        cholesterol = st.number_input(
+            "Cholesterol (mg/dL)",
+            100.0,
+            400.0,
+            200.0
+        )
 
-    weight = st.number_input(
-        "Weight (kg)",
-        30.0,
-        200.0,
-        65.0
-    )
+    with col2:
+        severity = st.selectbox(
+            "Severity Level",
+            [
+                "Mild",
+                "Moderate",
+                "Severe"
+            ]
+        )
+        blood_pressure = st.number_input(
+            "Blood Pressure (mmHg)",
+            80.0,
+            250.0,
+            120.0
+        )
 
+    with col3:
+        glucose = st.number_input(
+            "Glucose (mg/dL)",
+            50.0,
+            300.0,
+            100.0
+        )
+        calories = st.number_input(
+            "Daily Caloric Intake (kcal)",
+            1000.0,
+            5000.0,
+            2200.0
+        )
 
-col1, col2, col3 = st.columns(3)
+# -----------------------------
+# TAB 3: DIETARY PREFERENCES & LIFESTYLE
+# -----------------------------
+with tab3:
+    st.markdown('<div class="section-header">🍽️ Preferred Cuisine & Nutrition Filters</div>', unsafe_allow_html=True)
+    st.markdown('<p style="color: #6b7280; margin-top: -10px; margin-bottom: 20px;">Personalize food sources, allergens, strict diet principles and localization preferences.</p>', unsafe_allow_html=True)
 
-with col1:
+    # Clean custom notice displaying default local preferences
+    st.markdown("""
+    <div class="highlight-box">
+        <div style="font-size: 1.6rem; margin-right: 4px;">🇧🇩</div>
+        <div>
+            <strong style="color: #064e3b; font-size: 0.95rem;">Localized Nutrition Enabled</strong><br/>
+            <span style="font-size: 0.85rem; color: #0f5132; opacity: 0.9;">
+                The platform highlights <strong>Bangladeshi Cuisine</strong> as the default preference, integrated with <strong>Halal Food Only</strong> filtering for regional validation.
+            </span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    height = st.number_input(
-        "Height (cm)",
-        100.0,
-        220.0,
-        165.0
-    )
+    col1, col2 = st.columns(2)
+    with col1:
+        cuisine = st.selectbox(
+            "🇧🇩 Preferred Cuisine",
+            [
+                "Bangladeshi",
+                "Indian",
+                "Chinese",
+                "Italian",
+                "Mexican",
+                "All"
+            ],
+            index=0
+        )
+        restriction = st.selectbox(
+            "Dietary Restriction",
+            [
+                "None",
+                "Low_Sodium",
+                "Low_Sugar"
+            ]
+        )
+        allergy = st.selectbox(
+            "Allergy Risks",
+            [
+                "None",
+                "Gluten",
+                "Peanuts"
+            ]
+        )
 
-with col2:
-
-    bmi = st.number_input(
-        "BMI",
-        10.0,
-        60.0,
-        24.0
-    )
-
-with col3:
-
-    activity = st.selectbox(
-        "Physical Activity",
-        [
-            "Sedentary",
-            "Moderate",
-            "Active"
-        ]
-    )
-
-
-# ============================================================
-# HEALTH PROFILE
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">🏥 Health Profile</div>',
-    unsafe_allow_html=True
-)
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-
-    disease = st.selectbox(
-        "Disease Type",
-        [
-            "Diabetes",
-            "Hypertension",
-            "Obesity",
-            "None"
-        ]
-    )
-
-with col2:
-
-    severity = st.selectbox(
-        "Severity",
-        [
-            "Mild",
-            "Moderate",
-            "Severe"
-        ]
-    )
-
-with col3:
-
-    glucose = st.number_input(
-        "Glucose (mg/dL)",
-        50.0,
-        300.0,
-        100.0
-    )
-
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-
-    cholesterol = st.number_input(
-        "Cholesterol (mg/dL)",
-        100.0,
-        400.0,
-        200.0
-    )
-
-with col2:
-
-    blood_pressure = st.number_input(
-        "Blood Pressure (mmHg)",
-        80.0,
-        250.0,
-        120.0
-    )
-
-with col3:
-
-    calories = st.number_input(
-        "Daily Caloric Intake",
-        1000.0,
-        5000.0,
-        2200.0
-    )
-
-
-# ============================================================
-# FOOD PREFERENCES
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">🍽️ Food Preferences</div>',
-    unsafe_allow_html=True
-)
-
-col1, col2 = st.columns(2)
-
-with col1:
-
-    restriction = st.selectbox(
-        "Dietary Restriction",
-        [
-            "None",
-            "Low_Sodium",
-            "Low_Sugar"
-        ]
-    )
-
-with col2:
-
-    allergy = st.selectbox(
-        "Allergy",
-        [
-            "None",
-            "Gluten",
-            "Peanuts"
-        ]
-    )
-
-
-col1, col2 = st.columns(2)
-
-with col1:
-
-    cuisine = st.selectbox(
-        "🇧🇩 Preferred Cuisine",
-        [
-            "Bangladeshi",
-            "Indian",
-            "Chinese",
-            "Italian",
-            "Mexican",
-            "All"
-        ],
-        index=0
-    )
-
-with col2:
-
-    halal_only = st.toggle(
-        "🕌 Halal Food Only",
-        value=True
-    )
-
-
-# ============================================================
-# LIFESTYLE
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">🏃 Lifestyle & Diet Adherence</div>',
-    unsafe_allow_html=True
-)
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-
-    exercise = st.number_input(
-        "Weekly Exercise Hours",
-        0.0,
-        20.0,
-        5.0
-    )
-
-with col2:
-
-    adherence = st.number_input(
-        "Diet Adherence",
-        0.0,
-        100.0,
-        75.0
-    )
-
-with col3:
-
-    imbalance = st.number_input(
-        "Nutrient Imbalance Score",
-        0.0,
-        5.0,
-        2.0
-    )
+    with col2:
+        halal_only = st.toggle(
+            "🕌 Halal Food Only",
+            value=True
+        )
+        exercise = st.number_input(
+            "Weekly Exercise Hours",
+            0.0,
+            20.0,
+            5.0
+        )
+        adherence = st.number_input(
+            "Current Diet Adherence (%)",
+            0.0,
+            100.0,
+            75.0
+        )
+        imbalance = st.number_input(
+            "Nutrient Imbalance Score",
+            0.0,
+            5.0,
+            2.0
+        )
 
 
 # ============================================================
 # RECOMMEND BUTTON
 # ============================================================
 
-st.markdown("")
-
-st.markdown(
-    "### ✨ Ready to get your personalized plan?"
-)
+st.markdown("<br>", unsafe_allow_html=True)
 
 recommend_button = st.button(
-    "🔍  GET MY PERSONALIZED DIET PLAN",
+    "⚡ ANALYZE PROFILE & GENERATE DIET PLAN",
     use_container_width=True
 )
 
 
 # ============================================================
-# PREDICTION
+# PREDICTION & RESULTS
 # ============================================================
 
 if recommend_button:
 
-    user_data = {
+    with st.spinner("🧠 Evaluating clinical biometrics & parsing local nutrition catalogs..."):
 
-        "Age": age,
+        user_data = {
 
-        "Gender": gender,
+            "Age": age,
 
-        "Weight_kg": weight,
+            "Gender": gender,
 
-        "Height_cm": height,
+            "Weight_kg": weight,
 
-        "BMI": bmi,
+            "Height_cm": height,
 
-        "Disease_Type": disease,
+            "BMI": bmi,
 
-        "Severity": severity,
+            "Disease_Type": disease,
 
-        "Physical_Activity_Level": activity,
+            "Severity": severity,
 
-        "Daily_Caloric_Intake": calories,
+            "Physical_Activity_Level": activity,
 
-        "Cholesterol_mg/dL": cholesterol,
+            "Daily_Caloric_Intake": calories,
 
-        "Blood_Pressure_mmHg": blood_pressure,
+            "Cholesterol_mg/dL": cholesterol,
 
-        "Glucose_mg/dL": glucose,
+            "Blood_Pressure_mmHg": blood_pressure,
 
-        "Dietary_Restrictions": restriction,
+            "Glucose_mg/dL": glucose,
 
-        "Allergies": allergy,
+            "Dietary_Restrictions": restriction,
 
-        "Preferred_Cuisine": cuisine,
+            "Allergies": allergy,
 
-        "Weekly_Exercise_Hours": exercise,
+            "Preferred_Cuisine": cuisine,
 
-        "Adherence_to_Diet_Plan": adherence,
+            "Weekly_Exercise_Hours": exercise,
 
-        "Dietary_Nutrient_Imbalance_Score": imbalance
-    }
+            "Adherence_to_Diet_Plan": adherence,
 
-    user_df = pd.DataFrame([user_data])
+            "Dietary_Nutrient_Imbalance_Score": imbalance
+        }
 
-    # --------------------------------------------------------
-    # MODEL
-    # --------------------------------------------------------
+        user_df = pd.DataFrame([user_data])
 
-    predicted_diet = model.predict(
-        user_df
-    )[0]
+        # --------------------------------------------------------
+        # MODEL PREDICTION
+        # --------------------------------------------------------
 
-    probabilities = model.predict_proba(
-        user_df
-    )[0]
+        predicted_diet = model.predict(
+            user_df
+        )[0]
 
-    classes = model.classes_
+        probabilities = model.predict_proba(
+            user_df
+        )[0]
 
-    probability_df = pd.DataFrame({
+        classes = model.classes_
 
-        "Diet": classes,
+        probability_df = pd.DataFrame({
 
-        "Probability": probabilities
+            "Diet": classes,
 
-    }).sort_values(
-        "Probability",
-        ascending=False
-    )
+            "Probability": probabilities
 
-    confidence = probability_df.iloc[0]["Probability"]
+        }).sort_values(
+            "Probability",
+            ascending=False
+        )
 
-    # --------------------------------------------------------
-    # FOOD RECOMMENDATIONS
-    # --------------------------------------------------------
+        confidence = probability_df.iloc[0]["Probability"]
 
-    recommended_foods = recommend_foods(
+        # --------------------------------------------------------
+        # FOOD RECOMMENDATIONS
+        # --------------------------------------------------------
 
-        predicted_diet,
+        recommended_foods = recommend_foods(
 
-        food,
+            predicted_diet,
 
-        cuisine,
+            food,
 
-        halal_only,
+            cuisine,
 
-        9
-    )
+            halal_only,
+
+            9
+        )
 
     # ========================================================
-    # RESULT
+    # DIET PLAN RESULTS SUMMARY CARD
     # ========================================================
 
-    st.markdown("---")
+    st.markdown("<hr>", unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="section-title">
-    🎯 Your Personalized Result
+    <div class="section-header" style="margin-bottom: 20px;">
+    🎯 Personalized Recommendation Report
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown(
         f"""
-        <div class="recommendation">
-
-        <div class="recommendation-label">
-        Recommended Diet Plan
-        </div>
-
-        <div class="recommendation-title">
-        {predicted_diet}
-        </div>
-
-        <p>
-        Your profile has been analyzed using the
-        machine learning model.
-        </p>
-
+        <div class="diet-result-card">
+            <div class="diet-result-sub">Recommended Therapeutic Diet</div>
+            <div class="diet-result-main">🥗 {predicted_diet}</div>
+            <div class="diet-result-desc">
+                Your biological profile, physical activities, and medical indicators have been successfully synthesized by our classification model. We have customized the following diet strategy for optimized physiological recovery and health maintenance.
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
+    # ========================================================
+    # CONFIDENCE & BIOMETRICS METRIC SECTIONS
+    # ========================================================
+
+    col_conf, col_pref = st.columns([1, 1])
+
+    with col_conf:
+        st.markdown(
+            '<div class="section-header" style="font-size: 1.15rem; margin-top: 0;">📊 Model Confidence Breakdown</div>',
+            unsafe_allow_html=True
+        )
+
+        for i, row in enumerate(probability_df.head(3).itertuples()):
+            prob_pct = row.Probability * 100
+            st.markdown(f"""
+            <div class="confidence-meter-container">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700; color: #064e3b; font-size: 0.9rem;">{row.Diet}</span>
+                    <span style="font-weight: 800; color: #059669; font-size: 0.9rem;">{row.Probability:.1%}</span>
+                </div>
+                <div class="confidence-bar-bg">
+                    <div class="confidence-bar-fill" style="width: {prob_pct}%;"></div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    with col_pref:
+        st.markdown(
+            '<div class="section-header" style="font-size: 1.15rem; margin-top: 0;">📝 User Preference Synthesis</div>',
+            unsafe_allow_html=True
+        )
+
+        m_col1, m_col2 = st.columns(2)
+        with m_col1:
+            st.metric(
+                label="Selected Cuisine",
+                value=cuisine
+            )
+            st.metric(
+                label="Physical Activity Level",
+                value=activity
+            )
+        with m_col2:
+            st.metric(
+                label="Halal Validation Filter",
+                value="Active 🕌" if halal_only else "Inactive ❌"
+            )
+            st.metric(
+                label="Target User Age",
+                value=f"{age} Years"
+            )
 
     # ========================================================
-    # CONFIDENCE
+    # RECOMMENDED FOODS SECTIONS
     # ========================================================
 
+    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown(
-        '<div class="section-title">📊 Prediction Confidence</div>',
-        unsafe_allow_html=True
-    )
-
-    col1, col2, col3 = st.columns(3)
-
-    for i, row in enumerate(
-        probability_df.head(3).itertuples()
-    ):
-
-        if i < 3:
-
-            with [col1, col2, col3][i]:
-
-                st.metric(
-                    row.Diet,
-                    f"{row.Probability:.1%}"
-                )
-
-
-    # ========================================================
-    # USER PREFERENCE SUMMARY
-    # ========================================================
-
-    st.markdown(
-        '<div class="section-title">📝 Your Selected Preferences</div>',
-        unsafe_allow_html=True
-    )
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.metric(
-            "Cuisine",
-            cuisine
-        )
-
-    with col2:
-        st.metric(
-            "Halal",
-            "Yes" if halal_only else "No"
-        )
-
-    with col3:
-        st.metric(
-            "Activity",
-            activity
-        )
-
-    with col4:
-        st.metric(
-            "Age",
-            age
-        )
-
-
-    # ========================================================
-    # FOOD RECOMMENDATIONS
-    # ========================================================
-
-    st.markdown(
-        '<div class="section-title">🍛 Recommended Foods</div>',
+        '<div class="section-header">🍛 Recommended Food Selections & Macros</div>',
         unsafe_allow_html=True
     )
 
     if len(recommended_foods) == 0:
 
         st.warning(
-            "No suitable food was found for the selected "
-            "preferences."
+            "⚠️ No suitable foods were found in the database matching your specific criteria. "
+            "Consider broadening your preferred cuisine or disabling restriction filters."
         )
 
     else:
+        st.info(
+            "💡 The foods displayed below are classified and prioritized specifically for your recommended diet. "
+            "Nutritional components are listed per 100 grams."
+        )
 
+        # Draw beautiful nutrition-focused cards
         cols = st.columns(3)
 
         for i, (_, row) in enumerate(
@@ -832,58 +980,70 @@ if recommend_button:
 
             with cols[i % 3]:
 
-                food_name = row.get(
-                    "food",
-                    "Food"
-                )
+                food_name = row.get("food", "Food").title()
+                food_cuisine = row.get("Cuisine", "Other")
+                category = row.get("Food_Category", "Other")
+                halal_status = row.get("Halal_Status", "Unknown")
 
-                food_cuisine = row.get(
-                    "Cuisine",
-                    "Other"
-                )
+                # Parse Nutrition metrics
+                calories_val = row.get("Calories (kcal per 100g)", 0.0)
+                protein_val = row.get("Protein (g per 100g)", 0.0)
+                carbs_val = row.get("Carbohydrates (g per 100g)", 0.0)
+                fat_val = row.get("Fat (g per 100g)", 0.0)
+                fiber_val = row.get("Dietary Fiber (g per 100g)", 0.0)
+                sodium_val = row.get("Sodium (mg per 100g)", 0.0)
 
-                category = row.get(
-                    "Food_Category",
-                    "Other"
-                )
-
-                halal_status = row.get(
-                    "Halal_Status",
-                    "Unknown"
-                )
+                badge_halal_class = "badge-halal" if halal_status.lower() == "halal" else "badge-haram"
 
                 st.markdown(
                     f"""
                     <div class="food-card">
-
-                    <div class="food-name">
-                    🍽️ {food_name}
-                    </div>
-
-                    <span class="badge">
-                    🇧🇩 {food_cuisine}
-                    </span>
-
-                    <span class="badge">
-                    🥗 {category}
-                    </span>
-
-                    <span class="badge">
-                    🕌 {halal_status}
-                    </span>
-
+                        <div class="food-title">🍽️ {food_name}</div>
+                        <div class="food-badge-row">
+                            <span class="food-badge badge-cuisine">🇧🇩 {food_cuisine}</span>
+                            <span class="food-badge badge-category">🥗 {category}</span>
+                            <span class="food-badge {badge_halal_class}">🕌 {halal_status}</span>
+                        </div>
+                        <div style="border-top: 1px dashed #e5e7eb; margin: 10px 0;"></div>
+                        <div class="nutrition-fact-grid">
+                            <div class="nutrition-item">
+                                <span class="nutrition-label">⚡ Cal</span>
+                                <span class="nutrition-value">{calories_val:.1f}</span>
+                            </div>
+                            <div class="nutrition-item">
+                                <span class="nutrition-label">🥩 Prot</span>
+                                <span class="nutrition-value">{protein_val:.1f}g</span>
+                            </div>
+                            <div class="nutrition-item">
+                                <span class="nutrition-label">🍞 Carb</span>
+                                <span class="nutrition-value">{carbs_val:.1f}g</span>
+                            </div>
+                            <div class="nutrition-item">
+                                <span class="nutrition-label">🥑 Fat</span>
+                                <span class="nutrition-value">{fat_val:.1f}g</span>
+                            </div>
+                            <div class="nutrition-item">
+                                <span class="nutrition-label">🌾 Fiber</span>
+                                <span class="nutrition-value">{fiber_val:.1f}g</span>
+                            </div>
+                            <div class="nutrition-item">
+                                <span class="nutrition-label">🧂 Sod</span>
+                                <span class="nutrition-value">{sodium_val:.0f}mg</span>
+                            </div>
+                        </div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
-
         # ====================================================
         # NUTRITION TABLE
         # ====================================================
 
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
-            "### 📋 Nutrition Information"
+            '<div class="section-header" style="font-size: 1.15rem;">📋 Comprehensive Dietary Reference Table</div>',
+            unsafe_allow_html=True
         )
 
         display_columns = [
@@ -920,14 +1080,13 @@ if recommend_button:
 
         ]
 
+        # Present renamed columns for neatness in table
+        df_display = recommended_foods[available_columns].copy()
+        df_display.columns = [col.replace(" (kcal per 100g)", "").replace(" (g per 100g)", "").replace(" (mg per 100g)", "").title() for col in df_display.columns]
+
         st.dataframe(
-
-            recommended_foods[
-                available_columns
-            ].reset_index(drop=True),
-
+            df_display.reset_index(drop=True),
             use_container_width=True,
-
             hide_index=True
         )
 
@@ -936,24 +1095,20 @@ if recommend_button:
 # FOOTER
 # ============================================================
 
-st.markdown("---")
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 st.markdown(
     """
-    <div class="footer">
-
-    🥗 <b>NutriCare</b> —
-    Personalized Diet Recommendation System
-
-    <br><br>
-
-    Built with Machine Learning & Streamlit
-
-    <br>
-
-    For educational purposes only.
-    This system does not replace professional medical advice.
-
+    <div class="footer-container">
+        <div class="footer-logo">🥗 NutriCare Pro</div>
+        <p style="margin-bottom: 1.5rem; opacity: 0.85; font-size: 1.1rem;">Advanced Personalized Clinical Nutrition & Dietetics Portal</p>
+        <p style="font-size: 0.9rem; max-width: 650px; margin: 0 auto 1.5rem auto; opacity: 0.7; line-height: 1.6;">
+            Leveraging state-of-the-art Machine Learning recommendation algorithms tailored specifically for Bangladeshi and global cuisine profiles with strict Halal validation.
+        </p>
+        <div style="width: 80px; height: 2px; background-color: #10b981; margin: 1.5rem auto;"></div>
+        <p style="font-size: 0.8rem; opacity: 0.5; margin: 0;">
+            © 2025 NutriCare Pro. Academic Project Presentation. For clinical evaluation only.
+        </p>
     </div>
     """,
     unsafe_allow_html=True
